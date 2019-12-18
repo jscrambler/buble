@@ -1,12 +1,25 @@
 import LoopStatement from './shared/LoopStatement.js';
 import destructure from '../../utils/destructure.js';
 import extractNames from '../extractNames.js';
+import Scope from '../Scope.js';
 
 export default class ForInStatement extends LoopStatement {
+	initialise(transforms) {
+		this.createdDeclarations = [];
+
+		this.scope = new Scope({
+			block: true,
+			parent: this.parent.findScope(false),
+			declare: id => this.createdDeclarations.push(id)
+		});
+
+		super.initialise(transforms);
+	}
+
 	findScope(functionScope) {
-		return functionScope || !this.createdScope
+		return functionScope
 			? this.parent.findScope(functionScope)
-			: this.body.scope;
+			: this.scope;
 	}
 
 	transpile(code, transforms) {
@@ -29,7 +42,7 @@ export default class ForInStatement extends LoopStatement {
 		super.transpile(code, transforms);
 
 		const maybePattern = hasDeclaration ? this.left.declarations[0].id : this.left;
-		if (maybePattern.type !== 'Identifier') {
+		if (maybePattern.type !== 'Identifier' && maybePattern.type !== 'MemberExpression') {
 			this.destructurePattern(code, maybePattern, hasDeclaration);
 		}
 	}
