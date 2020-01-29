@@ -12,7 +12,7 @@ export default class Identifier extends Node {
 			return this.parent.body.scope;
 		}
 
-		return this.parent.findScope(functionScope).findDeclarationScope(this.name);
+		return this.parent.findScope(functionScope);
 	}
 
 	initialise(transforms) {
